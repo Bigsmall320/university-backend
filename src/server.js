@@ -9,6 +9,7 @@ app.use(express.json());
 app.use("/auth", require("./routes/authRoutes"));
 // Protected - only accessible to logged in users
 app.use("/students", validateToken, require("./routes/studentRoutes")); 
+app.use("/registration", validateToken, require("./routes/registrationRoutes"));
 
 app.get("/", (req, res) => {
     res.json({
