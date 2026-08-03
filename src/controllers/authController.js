@@ -14,7 +14,6 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // Find user in database
     const user = await AuthModel.findUserByEmail(email);
-    console.log("user", user)
 
     // Check if user exists
     if(!user) {
