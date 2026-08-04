@@ -38,7 +38,7 @@ const RegistrationModel = {
     },
 
     // Register for units
-    registerUnit(userId, unitOfferingId, registrationType) {
+    registerNewUnit(userId, unitOfferingId, registrationType) {
         return new Promise((resolve, reject) => {
             const query = `
                 INSERT INTO Registration (student_id, offering_id, registration_type, registration_status, registration_date)
@@ -55,17 +55,42 @@ const RegistrationModel = {
         });
     },
 
+    registerOldUnit(userId, unitOfferingId, registrationType) {
+        return new Promise((resolve, reject) => {
+            const query = `
+                UPDATE Registration
+                SET registration_type = ?, 
+                    registration_status = 'REGISTERED', 
+                    registration_date = CURDATE()
+                WHERE student_id = ? 
+                AND offering_id = ?;
+            `;
+
+            db.query(query, [registrationType, userId, unitOfferingId], (err, results) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                return resolve(results);
+            });
+        });
+    },
+
     // Get unit id by unit offering id
     getStudentUnitHistory(studentId, offeringId) {
         return new Promise((resolve, reject) => {
             const query = `
                 SELECT 
                     uo.unit_id,
+                    uo.semester_id,
                     reg.registration_id,
                     reg.registration_status,
                     reg.registration_type,
-                    r.remark AS result_remark
+                    r.remark AS result_remark,
+                    sem.status AS semester_status
                 FROM UnitOffering  AS uo
+                INNER JOIN Semester AS sem
+                    ON uo.semester_id = sem.semester_id
                 INNER JOIN Registration AS reg
                     ON uo.offering_id = reg.offering_id
                 LEFT JOIN Result AS r
@@ -84,6 +109,29 @@ const RegistrationModel = {
                 }
 
                 return resolve(results[0]);
+            });
+        });
+    },
+
+    // Drop registered unit
+    dropRegisteredUnitByUnitOfferingId(studentId, offeringId) {
+        return new Promise((resolve, reject) => {
+            const query = `
+                UPDATE Registration AS reg
+                LEFT JOIN Result AS r
+                    ON reg.registration_id = r.registration_id
+                SET reg.registration_status = 'DROPPED',
+                    reg.registration_date = CURDATE(),
+                    r.remark = NULL
+                WHERE reg.student_id = ? AND reg.offering_id = ?;
+            `;
+
+            db.query(query, [studentId, offeringId], (err, results) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                return resolve(results);
             });
         });
     }

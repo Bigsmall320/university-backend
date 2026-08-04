@@ -4,7 +4,7 @@ const { getAvailableUnits, registerUnit, dropRegisteredUnit } = require("../cont
 const router = express.Router();
 
 router.get("/", getAvailableUnits);
-router.route("/register-units").post(validateRoles("Student"), registerUnit);
-router.route("/available-units/:offeringId").delete(validateRoles("Student"), dropRegisteredUnit);
+router.route("/register-unit").post(validateRoles("Student"), registerUnit);
+router.route("/register-unit/:offeringId").delete(validateRoles("Student"), dropRegisteredUnit);
 
 module.exports = router;

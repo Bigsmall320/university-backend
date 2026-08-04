@@ -46,42 +46,95 @@ const registerUnit = asyncHandler(async (req, res) => {
     }
 
     let registrationType = "REGULAR";
+    // 1. Check if the student has a previous registration
     if (RegisteredUnit) {
+
+        // Scenario A: Re-registering a dropped unit
         if (
-            RegisteredUnit.registration_status === "REGISTERED" &&
-            RegisteredUnit.result_remark === "FAIL"
+            RegisteredUnit.registration_status === "DROPPED" &&
+            RegisteredUnit.result_remark === null
         ) {
-            registrationType = "SUPPLEMENTARY";
-        } else if (
+
+            const availableUnits = await RegistrationModel.getAvailableUnits(req.user.id);
+
+            const registrationType =
+                RegisteredUnit.semester_status === "COMPLETED" &&
+                availableUnits.includes(offeringId)
+                    ? "RETAKE"
+                    : "REGULAR";
+
+            await RegistrationModel.registerOldUnit(
+                req.user.id,
+                offeringId,
+                registrationType
+            );
+
+            return res.status(200).json({
+                success: true,
+                message: `Unit re-registered successfully as ${registrationType}.`
+            });
+        }
+
+        // Scenario B: Already registered and passed
+        if (
             RegisteredUnit.registration_status === "REGISTERED" &&
             RegisteredUnit.result_remark === "PASS"
         ) {
             return res.status(400).json({
                 success: false,
-                message: "Unit is already registered and passed."
+                message: "Unit has already been passed."
             });
-        } else if (RegisteredUnit.registration_status === "DROPPED") {
-            // Business rule:
-            // A student who previously dropped a registered unit
-            // is treated as RETAKE on subsequent registration.
-            registrationType = "RETAKE";
+        }
+
+        // Scenario C: Failed before
+        if (
+            RegisteredUnit.registration_status === "REGISTERED" &&
+            RegisteredUnit.result_remark === "FAIL"
+        ) {
+
+            await RegistrationModel.registerNewUnit(
+                req.user.id,
+                offeringId,
+                "SUPPLEMENTARY"
+            );
+
+            return res.status(201).json({
+                success: true,
+                message: "Unit registered successfully as SUPPLEMENTARY."
+            });
         }
     }
 
-    await RegistrationModel.registerUnit(req.user.id, offeringId, registrationType);
+    // Scenario D: First-time registration
+    await RegistrationModel.registerNewUnit(
+        req.user.id,
+        offeringId,
+        "REGULAR"
+    );
 
     return res.status(201).json({
         success: true,
-        message: "Units registered successfully.",
+        message: "Unit registered successfully."
     });
 });
 
 const dropRegisteredUnit = asyncHandler(async (req, res) => {
-    // Implementation for dropping registered unit
-    res.json({
+    const offeringId = req.params.offeringId;
+
+    if(!offeringId) {
+        return res.status(400).json({
+            success: false,
+            message: "Offering ID is required."
+        });
+    }
+
+    const parsedOfferingId = parseInt(offeringId, 10);
+
+    await RegistrationModel.dropRegisteredUnitByUnitOfferingId(req.user.id, parsedOfferingId);
+
+    return res.status(200).json({
         success: true,
         message: "Registered unit dropped successfully.",
-        data: [] // Replace with actual data
     });
 });
 
