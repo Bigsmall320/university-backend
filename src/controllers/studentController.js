@@ -88,14 +88,6 @@ const getStudentDashboard = asyncHandler( async(req, res) => {
         })
     }
 
-    // res.status(200).json({
-    //     success: true,
-    //     data: {
-    //         feeStructure,
-    //         studentProfile
-    //     }
-    // })
-
 
     // Retrieve the Academic Summary of the student
     const registeredUnits = await StudentModel.getActiveRegisteredUnits(req.user.id);

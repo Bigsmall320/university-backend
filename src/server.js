@@ -11,6 +11,7 @@ app.use("/auth", require("./routes/authRoutes"));
 app.use("/students", validateToken, require("./routes/studentRoutes")); 
 app.use("/registration", validateToken, require("./routes/registrationRoutes"));
 app.use("/results", validateToken, require("./routes/resultRoutes"));
+app.use("/finance", validateToken, require("./routes/financeRoutes"));
 
 app.get("/", (req, res) => {
     res.json({

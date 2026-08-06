@@ -86,8 +86,6 @@ const getStudentResults = asyncHandler( async(req, res) => {
                 : Number((totalQualityPoints / totalCreditHours).toFixed(2));
     }
 
-    console.log(GPA);
-
     res.json({
         success: true,
         message: "Student results fetched successfully",
