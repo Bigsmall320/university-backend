@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 require("dotenv").config();
 const  validateToken = require("./middlewares/validateTokenHandler");
 const errorHandler = require("./middlewares/errorHandler");
@@ -6,10 +7,14 @@ const errorHandler = require("./middlewares/errorHandler");
 // create a server instanse
 const app = express(); 
 
+app.use(cors({
+    origin: "http://localhost:5173",
+}));
+
 app.use(express.json());
+
 app.use("/auth", require("./routes/authRoutes"));
-// Protected - only accessible to logged in users
-app.use("/students", validateToken, require("./routes/studentRoutes")); 
+app.use("/student", validateToken, require("./routes/studentRoutes")); 
 app.use("/registration", validateToken, require("./routes/registrationRoutes"));
 app.use("/results", validateToken, require("./routes/resultRoutes"));
 app.use("/finance", validateToken, require("./routes/financeRoutes"));
