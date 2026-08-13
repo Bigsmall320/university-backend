@@ -132,7 +132,7 @@ const StudentModel = {
                 }
 
                 if(results.length === 0) {
-                    return resolve(null);
+                    return resolve([]);
                 }
                 
                 return resolve(results);
@@ -176,7 +176,7 @@ const StudentModel = {
                 }
 
                 if(results.length === 0) {
-                    return resolve(null);
+                    return resolve([]);
                 }
 
                 return resolve(results);
