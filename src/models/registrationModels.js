@@ -215,7 +215,7 @@ const RegistrationModel = {
                 INNER JOIN Semester AS sem
                     ON uo.semester_id = sem.semester_id
 
-                INNER JOIN Registration AS reg
+                LEFT JOIN Registration AS reg
                     ON uo.offering_id = reg.offering_id
                     AND reg.student_id = ?
 
