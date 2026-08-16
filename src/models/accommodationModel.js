@@ -4,6 +4,71 @@ const AppError = require("../utils/AppError")
 
 const AccommodationModel = {
     // Both Accommodation Offfcer and Student can access this data
+    getAllHostels(studentId) {
+        return new Promise((resolve, reject) => {
+            const query = `
+                SELECT
+                    h.hostel_id,
+                    h.hostel_name,
+                    h.location AS hostel_location,
+                    h.number_of_floors
+
+                FROM Person AS p
+                
+                INNER JOIN Hostel AS h
+                    ON p.gender = h.gender
+
+                WHERE p.person_id = ? AND h.status = 'ACTIVE';
+            `;
+
+            db.query(query, [studentId], (err, results) => {
+                if(err) return reject(err);
+
+                if(results.length === 0) return resolve([]);
+
+                return resolve(results);
+            });
+        })
+    },
+
+    getStudentCurrentBooking(studentId) {
+        return new Promise((resolve, reject) => {
+            const query = `
+                SELECT
+                    b.booking_id,
+                    b.room_id,
+                    r.room_number,
+                    r.floor AS room_floor,
+                    h.hostel_name,
+                    h.location
+
+                FROM Booking AS b
+
+                INNER JOIN Room AS r
+                    ON b.room_id = r.room_id
+
+                INNER JOIN Hostel AS h 
+                    ON r.hostel_id = h.hostel_id
+                    AND h.status = 'ACTIVE'
+
+                INNER JOIN Semester AS sem
+                    ON b.semester_id = sem.semester_id
+
+                WHERE b.student_id = ?
+                AND b.booking_status = 'ACIVE'
+                AND sem.status = 'ACTIVE'
+            `;
+
+            db.query(query, [studentId], (err, results) => {
+                if(err) return reject(err);
+
+                if(results.length === 0) return resolve(null);
+
+                return resolve(results[0]);
+            });
+        });
+    },
+
     getVacantRooms(userId) {
         return new Promise((resolve, reject) => {
             const query = `
